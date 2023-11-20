@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+      "lib": ["esnext"],
+      "target": "es5",
+      "module": "commonjs",
+      "declaration": true, 
+      "outDir": "./build", 
+      "strict": true,
+      "esModuleInterop": true,
+    },
+    "include": [
+      "*.ts"
+    ],
+    "exclude": [
+      "node_modules", 
+      "build"
+    ]
+  }
+  

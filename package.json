@@ -1,0 +1,34 @@
+{
+    "name": "core-windows-registry",
+    "version": "1.0.0",
+    "description": "Windows Registry",
+    "main": "index.js",
+    "types": "index",
+    "author": "kdex",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/zkxdex/core-windows-registry.git"
+    },
+    "homepage": "https://github.com/zkxdex/core-windows-registry",
+    "bugs": {
+        "url": "https://github.com/zkxdex/core-windows-registry/issues"
+    },
+    "os": [
+        "win32"
+    ],
+    "dependencies": {
+        "node-addon-api": "^4.3.0"
+    },
+    "devDependencies": {
+        "@types/node": "^20.9.2",
+        "mocha": "^10.2.0",
+        "node-gyp": "^10.0.1",
+        "typescript": "^5.2.2"
+    },
+
+    "scripts": {
+        "build": "tsc -d && node-gyp configure && node-gyp build",
+        "test": "mocha"
+    }
+}

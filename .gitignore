@@ -1,0 +1,4 @@
+build
+node_modules
+*.d.ts
+index.js
