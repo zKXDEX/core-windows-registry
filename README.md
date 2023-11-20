@@ -15,7 +15,7 @@ The `core-windows-registry` is a Node.js library for interacting with the Window
 The library exports several functions and enums for registry manipulation:
 
 ### Enums:
-- `HK`: Represents different root keys in the Windows Registry.
+- `HKEY`: Represents different root keys in the Windows Registry.
 - `REG`: Represents the data types for registry values.
 
 ### Functions:
