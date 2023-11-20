@@ -36,6 +36,8 @@ To use `core-windows-registry`, clone the repository and install the dependencie
 git clone https://github.com/zkxdex/core-windows-registry.git
 cd core-windows-registry
 npm install
+or
+yarn
 ```
 
 ## Building
@@ -44,6 +46,10 @@ To build the project, run the following command:
 
 ```bash
 npm run build
+```
+or 
+```bash
+yarn run build
 ```
 
 This will compile the TypeScript files, configure the build with `node-gyp`, and compile the native code.
@@ -54,6 +60,10 @@ To run the tests, execute the following command:
 
 ```bash
 npm test
+```
+or 
+```bash
+yarn test
 ```
 
 Make sure you have Mocha installed as it is used for running the tests.
