@@ -1,10 +1,12 @@
 #include <napi.h>
 #include <uv.h>
 #include <windows.h>
-using namespace Napi;
-#define VALUE_MAX 32767
-#define DATA_MAX (1024 * 1024)
 
+using namespace Napi;
+#define VALUE_MAX_SIZE 32767
+#define DATA_MAX_SIZE (1024 * 1024)
+
+// Function to open a registry key with specified access rights
 HKEY openKey(const Napi::CallbackInfo& info, REGSAM access) {
   HKEY ret = 0;
   auto root = (HKEY)(int64_t)info[0].ToNumber();
@@ -17,9 +19,10 @@ HKEY openKey(const Napi::CallbackInfo& info, REGSAM access) {
   return ret;
 }
 
-static WCHAR name[VALUE_MAX];
-static BYTE data[DATA_MAX];
+static WCHAR name[VALUE_MAX_SIZE];
+static BYTE data[DATA_MAX_SIZE];
 
+// Function to get a registry key and its values
 Napi::Value getKey(const Napi::CallbackInfo& info) {
   auto env = info.Env();
 
@@ -37,19 +40,24 @@ Napi::Value getKey(const Napi::CallbackInfo& info) {
 
   LSTATUS error;
 
+  // Loop through all values of the key
   while (TRUE) {
-    nameLength = VALUE_MAX - 1;
-    dataLength = DATA_MAX - 1;
+    nameLength = VALUE_MAX_SIZE - 1;
+    dataLength = DATA_MAX_SIZE - 1;
     if ((error = RegEnumValueW(key, index, (LPWSTR)&name, &nameLength, NULL, &valueType, (LPBYTE)&data, &dataLength)) != ERROR_SUCCESS) {
       if (error == ERROR_NO_MORE_ITEMS) {
         break;
       }
       return info.Env().Null();
     }
+
+    // Create a JavaScript object for each value
     auto obj = Object::New(env);
     auto jsName = String::New(env, reinterpret_cast<char16_t*>(name));
     obj.Set("name", jsName);
     obj.Set("type", Number::New(env, (uint32_t)valueType));
+
+    // Handle different types of values
     if (valueType == REG_SZ || valueType == REG_EXPAND_SZ) {
       data[dataLength] = 0;
       data[dataLength + 1] = 0;
@@ -71,7 +79,7 @@ Napi::Value getKey(const Napi::CallbackInfo& info) {
       data[dataLength + 1] = 0;
       DWORD pos = 0;
       DWORD idx = 0;
-      while ( pos < (dataLength-2)) { // do not add last (empty) string
+      while ( pos < (dataLength-2)) { // -2 because of the trailing null-wchar
         auto entry = String::New(env,reinterpret_cast<char16_t*>(data+pos));
         val.Set(idx++,  entry);
         pos += (entry.Utf16Value().length()+1) * 2 ;
@@ -89,6 +97,7 @@ Napi::Value getKey(const Napi::CallbackInfo& info) {
   return ret;
 }
 
+// Function to set a value of a registry key
 Napi::Value setValue(const Napi::CallbackInfo& info) {
   auto env = info.Env();
   auto key = openKey(info, KEY_WRITE);
@@ -99,6 +108,7 @@ Napi::Value setValue(const Napi::CallbackInfo& info) {
   auto valueType = (DWORD)(int64_t)info[2].ToNumber();
   DWORD dataLength = 0;
 
+  // Handle different types of values
   if (valueType == REG_SZ || valueType == REG_EXPAND_SZ) {
     auto value = info[4].ToString().Utf16Value();
     wcscpy((wchar_t*)data, (LPCWSTR)value.c_str());
@@ -121,7 +131,7 @@ Napi::Value setValue(const Napi::CallbackInfo& info) {
         wcscpy((wchar_t*)(&data[dataLength]), (LPCWSTR)entryValue.c_str());
         dataLength += entryValue.length() * 2 + 2;
       }
-      // Add trailing null-wchar
+      // add the trailing null-wchar
       data[dataLength++] = 0;
       data[dataLength++] = 0;
     }
@@ -139,6 +149,7 @@ Napi::Value setValue(const Napi::CallbackInfo& info) {
   return env.Null();
 }
 
+// Function to list all subkeys of a registry key
 Napi::Value listSubkeys(const Napi::CallbackInfo& info) {
   auto env = info.Env();
   auto key = openKey(info, KEY_ENUMERATE_SUB_KEYS);
@@ -147,12 +158,13 @@ Napi::Value listSubkeys(const Napi::CallbackInfo& info) {
   }
 
   DWORD index = 0;
-  DWORD nameLength = VALUE_MAX - 1;
+  DWORD nameLength = VALUE_MAX_SIZE - 1;
 
   auto ret = Array::New(env);
 
   LSTATUS error;
 
+  // Loop through all subkeys
   while (TRUE) {
     if ((error = RegEnumKeyW(key, index, (LPWSTR)&name, nameLength)) != ERROR_SUCCESS) {
       if (error == ERROR_NO_MORE_ITEMS) {
@@ -169,6 +181,7 @@ Napi::Value listSubkeys(const Napi::CallbackInfo& info) {
   return ret;
 }
 
+// Function to create a registry key
 Napi::Value createKey(const Napi::CallbackInfo& info) {
   HKEY key = 0;
   auto root = (HKEY)(int64_t)info[0].ToNumber();
@@ -185,6 +198,7 @@ Napi::Value createKey(const Napi::CallbackInfo& info) {
   return info.Env().Null();
 }
 
+// Function to delete a registry key
 Napi::Value deleteKey(const Napi::CallbackInfo& info) {
   auto root = (HKEY)(int64_t)info[0].ToNumber();
   auto path = (LPCWSTR)info[1].ToString().Utf16Value().c_str();
@@ -193,6 +207,7 @@ Napi::Value deleteKey(const Napi::CallbackInfo& info) {
   return info.Env().Null();
 }
 
+// Initialize the module
 Napi::Object Init(Napi::Env env, Napi::Object exports) {
   exports.Set("getKey", Napi::Function::New(env, getKey));
   exports.Set("setValue", Napi::Function::New(env, setValue));
