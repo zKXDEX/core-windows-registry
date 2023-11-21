@@ -35,21 +35,36 @@ To use `core-windows-registry`, clone the repository and install the dependencie
 ```bash
 git clone https://github.com/zkxdex/core-windows-registry.git
 cd core-windows-registry
-npm install
+npm i
 or
 yarn
+or
+pnpm i
 ```
 
 ## Building
-
 To build the project, run the following command:
 
+`node-gyp` is a tool used to compile native Node.js modules. You need to configure the build environment for your project.
+```bash
+node-gyp configure
+```
+
+Once configured, the next step is to compile the native code.
+```bash
+node-gyp build
+```
+
+Finally, you must compile the entire project, including the TypeScript files.
 ```bash
 npm run build
 ```
 or 
 ```bash
 yarn run build
+```
+```bash
+pnpm run build
 ```
 
 This will compile the TypeScript files, configure the build with `node-gyp`, and compile the native code.
@@ -64,6 +79,10 @@ npm test
 or 
 ```bash
 yarn test
+```
+or
+```bash
+pnpm test
 ```
 
 Make sure you have Mocha installed as it is used for running the tests.
